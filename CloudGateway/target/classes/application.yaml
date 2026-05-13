@@ -1,0 +1,57 @@
+server:
+  port: 9091
+spring:
+  application:
+    name: CloudGateway
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: ORDERSERVICE
+              uri: lb://ORDERSERVICE
+              predicates:
+                - Path=/order/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: ORDERSERVICE
+                    fallbackUri: forward:/orderServiceFallback
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenish-rate: 1
+                    redis-rate-limiter.burst-capacity: 1
+            - id: PAYMENTSERVICE
+              uri: lb://PAYMENTSERVICE
+              predicates:
+                - Path=/payment/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: PAYMENTSERVICE
+                    fallbackUri: forward:/PaymentServiceFallback
+            - id: PRODUCTSERVICE
+              uri: lb://PRODUCTSERVICE
+              predicates:
+                - Path=/product/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: PRODUCTSERVICE
+                    fallbackUri: forward:/productServiceFallback
+
+
+  config:
+    import: optional:configserver:http://localhost:9296
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty.http.client: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: gateway,routes,refresh,health,info

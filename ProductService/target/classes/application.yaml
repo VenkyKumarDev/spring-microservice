@@ -1,0 +1,26 @@
+spri ng:
+  application:
+    name: PRODUCTSERVICE
+  datasource:
+    url: jdbc:postgresql://localhost:5432/product_db
+    username: postgres
+    password: Venky@123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
+  config:
+    import: optional:configserver:http://localhost:9296
+
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
+server:
+  port: 8081
